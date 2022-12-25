@@ -28,5 +28,5 @@ MESSAGE(STATUS "Connected: ${PROJECT_NAME}_lib")
 target_link_libraries(${PROJECT_NAME}_lib PUBLIC Sakaar_Memory_lib)
 target_link_libraries(${PROJECT_NAME}_lib PUBLIC Sakaar_Struct_lib)
 
-add_executable(${PROJECT_NAME} main.c)
+add_executable(${PROJECT_NAME} main.c include/crypto_code.h src/crypto_code.c src/crypto_code/aes.c)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_lib)
