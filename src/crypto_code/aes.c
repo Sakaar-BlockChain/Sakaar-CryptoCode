@@ -82,7 +82,7 @@ const unsigned char inv_sbox[16][16] = {
         0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d,};
 
 unsigned char *PaddingNulls(unsigned char in[], unsigned inLen, unsigned alignLen) {
-    unsigned char *alignIn = skr_malloc(sizeof(unsigned) * alignLen);
+    unsigned char *alignIn = malloc(sizeof(unsigned) * alignLen);
     memcpy(alignIn, in, inLen);
     memset(alignIn + inLen, 0x00, alignLen - inLen);
     return alignIn;
@@ -107,7 +107,7 @@ void SubBytes(unsigned char **state, aes_base *aes) {
     }
 }
 void ShiftRow(unsigned char **state, int i, int n, aes_base *aes) {
-    unsigned char *tmp = skr_malloc(aes->Nb * sizeof(unsigned char));
+    unsigned char *tmp = malloc(aes->Nb * sizeof(unsigned char));
     for (
             int j = 0;
             j < aes->Nb;
@@ -116,7 +116,7 @@ void ShiftRow(unsigned char **state, int i, int n, aes_base *aes) {
     }
     memcpy(state[i], tmp, aes->Nb
                           * sizeof(unsigned char));
-    skr_free(tmp);
+    free(tmp);
 }
 void ShiftRows(unsigned char **state, aes_base *aes) {
     ShiftRow(state, 1, 1, aes);
@@ -146,7 +146,7 @@ void MixSingleColumn(unsigned char *r) {
     r[3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0];
 }
 void MixColumns(unsigned char **state) {
-    unsigned char *temp = skr_malloc(sizeof(unsigned) * 4);
+    unsigned char *temp = malloc(sizeof(unsigned) * 4);
 
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -157,7 +157,7 @@ void MixColumns(unsigned char **state) {
             state[j][i] = temp[j];
         }
     }
-    skr_free(temp);
+    free(temp);
 }
 void AddRoundKey(unsigned char **state, const unsigned char *key, aes_base *aes) {
     int i, j;
@@ -197,8 +197,8 @@ void Rcon(unsigned char *a, int n) {
     a[1] = a[2] = a[3] = 0;
 }
 void KeyExpansion(const unsigned char key[], unsigned char w[], aes_base *aes) {
-    unsigned char *temp = skr_malloc(sizeof(unsigned char) * 4);
-    unsigned char *rcon = skr_malloc(sizeof(unsigned char) * 4);
+    unsigned char *temp = malloc(sizeof(unsigned char) * 4);
+    unsigned char *rcon = malloc(sizeof(unsigned char) * 4);
 
     int i = 0;
     while (i < 4 * aes->Nk) {
@@ -229,8 +229,8 @@ void KeyExpansion(const unsigned char key[], unsigned char w[], aes_base *aes) {
         i += 4;
     }
 
-    skr_free(rcon);
-    skr_free(temp);
+    free(rcon);
+    free(temp);
 }
 void InvSubBytes(unsigned char **state, aes_base *aes) {
     int i, j;
@@ -291,8 +291,8 @@ void InvShiftRows(unsigned char **state, aes_base *aes) {
 }
 
 void EncryptBlock(const unsigned char in[], unsigned char out[], unsigned char *roundKeys, aes_base *aes) {
-    unsigned char **state = skr_malloc(sizeof(unsigned char *) * 4);
-    state[0] = skr_malloc(sizeof(unsigned char) * 4 * aes->Nb);
+    unsigned char **state = malloc(sizeof(unsigned char *) * 4);
+    state[0] = malloc(sizeof(unsigned char) * 4 * aes->Nb);
     int i, j, round;
     for (i = 0; i < 4; i++) {
         state[i] = state[0] + aes->Nb * i;
@@ -323,12 +323,12 @@ void EncryptBlock(const unsigned char in[], unsigned char out[], unsigned char *
             out[i + 4 * j] = state[i][j];
         }
     }
-    skr_free(state[0]);
-    skr_free(state);
+    free(state[0]);
+    free(state);
 }
 void DecryptBlock(const unsigned char in[], unsigned char out[], unsigned char *roundKeys, aes_base *aes) {
-    unsigned char **state = skr_malloc(sizeof(unsigned char *) * 4);
-    state[0] = skr_malloc(sizeof(unsigned char) * 4 * aes->Nb);
+    unsigned char **state = malloc(sizeof(unsigned char *) * 4);
+    state[0] = malloc(sizeof(unsigned char) * 4 * aes->Nb);
     int i, j, round;
     for (i = 0; i < 4; i++) {
         state[i] = state[0] + aes->Nb * i;
@@ -359,12 +359,12 @@ void DecryptBlock(const unsigned char in[], unsigned char out[], unsigned char *
             out[i + 4 * j] = state[i][j];
         }
     }
-    skr_free(state[0]);
-    skr_free(state);
+    free(state[0]);
+    free(state);
 }
 
 aes_base *aes_init() {
-    aes_base *aes = skr_malloc(sizeof(aes_base));
+    aes_base *aes = malloc(sizeof(aes_base));
     aes->Nb = 4;
     aes->Nk = 8;
     aes->Nr = 14;
@@ -374,31 +374,31 @@ aes_base *aes_init() {
 aes_ctx encrypt(const aes_ctx in, unsigned char key[], aes_base *aes) {
     aes_ctx out;
     out.length = GetPaddingLength(in.length, aes);
-    out.ctx = (unsigned char *) skr_malloc(sizeof(unsigned char) * out.length);
+    out.ctx = (unsigned char *) malloc(sizeof(unsigned char) * out.length);
 
     unsigned char *alignIn = PaddingNulls(in.ctx, in.length, out.length);
-    unsigned char *roundKeys = skr_malloc(4 * aes->Nb * (aes->Nr + 1) * sizeof(unsigned char));
+    unsigned char *roundKeys = malloc(4 * aes->Nb * (aes->Nr + 1) * sizeof(unsigned char));
     KeyExpansion(key, roundKeys, aes);
 
     for (unsigned i = 0; i < out.length; i += aes->blockBytesLen) {
         EncryptBlock(alignIn + i, out.ctx + i, roundKeys, aes);
     }
-    skr_free(alignIn);
-    skr_free(roundKeys);
+    free(alignIn);
+    free(roundKeys);
     return out;
 }
 aes_ctx decrypt(const aes_ctx in, unsigned char key[], aes_base *aes) {
     aes_ctx out;
     out.length = in.length;
-    out.ctx = (unsigned char *) skr_malloc(sizeof(unsigned char) * in.length);
+    out.ctx = (unsigned char *) malloc(sizeof(unsigned char) * in.length);
 
-    unsigned char *roundKeys = skr_malloc(4 * aes->Nb * (aes->Nr + 1) * sizeof(unsigned char));
+    unsigned char *roundKeys = malloc(4 * aes->Nb * (aes->Nr + 1) * sizeof(unsigned char));
     KeyExpansion(key, roundKeys, aes);
 
     for (unsigned i = 0; i < in.length; i += aes->blockBytesLen) {
         DecryptBlock(in.ctx + i, out.ctx + i, roundKeys, aes);
     }
-    skr_free(roundKeys);
+    free(roundKeys);
     return out;
 }
 
@@ -426,11 +426,11 @@ void aes_encode(struct string_st *res, const struct string_st *msg, const struct
 
         memcpy(res->data + i * 64, out.ctx, out.length);
         res_size += out.length;
-        skr_free(out.ctx);
+        free(out.ctx);
     }
     res->data[res_size] = _size;
     string_resize(res, res_size + 1);
-    skr_free(aes);
+    free(aes);
 }
 void aes_decode(struct string_st *res, const struct string_st *msg, const struct string_st *key) {
     if (res == NULL) return;
@@ -455,10 +455,10 @@ void aes_decode(struct string_st *res, const struct string_st *msg, const struct
 
         memcpy(res->data + i * 64, out.ctx, out.length);
         res_size += out.length;
-        skr_free(out.ctx);
+        free(out.ctx);
     }
     string_resize(res, res_size - (16 - _size) % 16);
-    skr_free(aes);
+    free(aes);
 }
 
 
