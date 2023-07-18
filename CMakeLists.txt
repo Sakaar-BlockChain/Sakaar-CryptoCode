@@ -3,11 +3,11 @@ project(Sakaar_CryptoCode C)
 
 set(CMAKE_C_STANDARD 99)
 
-if(NOT TARGET Sakaar_Struct_lib)
+if (NOT TARGET Sakaar_Struct_lib)
     add_subdirectory(lib/Sakaar-Struct)
     link_directories(lib/Sakaar-Struct)
     MESSAGE(STATUS "Connected: Sakaar_Struct_lib")
-endif()
+endif ()
 
 FILE(GLOB SOURCE_FILES_DIR_DIR "src/*/*/*.c")
 FILE(GLOB SOURCE_FILES_DIR "src/*/*.c")
